@@ -1,7 +1,14 @@
 venv/
 .env
-api/.env
+
+__pycache__/
+*.pyc
 
 api/Entrainement_ALS/als_model/
+api/Entrainement_ALS/
 *.parquet
 *.crc
+
+recommendations_api.json
+product_mapping.json
+user_mapping.json
