@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+.sixth/
+reviews_Electronics_5.json
+mazon 5-core electronics reviews.zip
