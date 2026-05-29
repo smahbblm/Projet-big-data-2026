@@ -1,0 +1,7 @@
+venv/
+.env
+api/.env
+
+api/Entrainement_ALS/als_model/
+*.parquet
+*.crc
