@@ -1,5 +1,12 @@
-from pyspark.ml.recommendation import ALSModel
+import os
+import sys
+
+os.environ["PYSPARK_PYTHON"] = sys.executable
+os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
+
 from pyspark.sql import SparkSession
+from pyspark.ml.recommendation import ALSModel
+
 import zipfile
 import os
 

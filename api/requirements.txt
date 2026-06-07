@@ -3,3 +3,5 @@ uvicorn
 pyspark
 pymongo
 python-dotenv
+numpy
+pandas

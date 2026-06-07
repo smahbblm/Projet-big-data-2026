@@ -13,6 +13,7 @@ os.environ["PATH"] += r";D:\hadoop\bin"
 os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 
+
 # Charger le .env
 load_dotenv()
 
