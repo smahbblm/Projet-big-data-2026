@@ -69,5 +69,8 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
+      - /home/ubuntu/projet-final:/opt/airflow/project
+      - /opt/spark:/opt/spark
+      - /var/run/docker.sock:/var/run/docker.sock
     command: scheduler
     restart: always
