@@ -8,6 +8,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    volumes:
+      - /home/ubuntu/model:/home/ubuntu/model
     restart: always
 
   postgres:
