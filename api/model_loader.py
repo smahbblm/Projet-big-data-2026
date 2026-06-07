@@ -1,42 +1,50 @@
-import os
-import sys
-
-os.environ["PYSPARK_PYTHON"] = sys.executable
-os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
-
-from pyspark.sql import SparkSession
 from pyspark.ml.recommendation import ALSModel
-
+from pyspark.sql import SparkSession
 import zipfile
 import os
+import boto3
 
-def load_model(zip_path="Entrainement_ALS/als_model/als_model"):
-    # 1. Si on nous passe un chemin qui finit par .zip, on gère l'extraction
-    if zip_path.endswith(".zip"):
-        extract_dir = zip_path.replace(".zip", "")
-        if not os.path.exists(extract_dir):
-            with zipfile.ZipFile(zip_path, "r") as z:
-                z.extractall(extract_dir)
-        final_path = extract_dir
-    else:
-        # Si c'est directement le dossier, on l'utilise tel quel
-        final_path = zip_path
+def download_from_s3():
+    bucket   = os.getenv("S3_BUCKET")
+    s3_key   = os.getenv("S3_MODEL_KEY")
+    zip_path = "/tmp/model/Entrainement_ALS.zip"
+    model_dir = "/tmp/model/als_model"
 
-    # 2. Initialisation de Spark avec les patchs pour Windows
+    os.makedirs("/tmp/model", exist_ok=True)
+
+    if not os.path.exists(zip_path):
+        print("Téléchargement du modèle depuis S3...")
+        s3 = boto3.client('s3')
+        s3.download_file(bucket, s3_key, zip_path)
+        print("✅ ZIP téléchargé")
+
+    if not os.path.exists(model_dir):
+        print("Extraction du modèle...")
+        with zipfile.ZipFile(zip_path, "r") as z:
+            z.extractall("/tmp/model/")
+        print("✅ Modèle extrait")
+
+    # Trouver le bon chemin
+    final_path = "/tmp/model/als_model/als_model"
+    if not os.path.exists(final_path):
+        final_path = "/tmp/model/als_model"
+
+    return final_path
+
+def load_model():
+    final_path = download_from_s3()
+
     spark = SparkSession.builder \
         .appName("RecoAPI") \
         .config("spark.driver.memory", "2g") \
-        .config("spark.sql.warehouse.dir", "file:///D:/tmp") \
+        .config("spark.sql.shuffle.partitions", "4") \
         .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=true") \
         .getOrCreate()
 
-    # 3. Désactiver la vérification NativeIO de Hadoop en Java pour Windows
-    try:
-        spark._jvm.org.apache.hadoop.io.nativeio.NativeIO.Windows.setAllowAllAccess(True)
-    except Exception as e:
-        print("Note: Impossible de patcher NativeIO (Hadoop est peut-être absent), on continue...")
+    spark.sparkContext.setLogLevel("ERROR")
+    print("✅ Spark démarré")
 
-    # 4. Chargement du modèle depuis le BON chemin final
     model = ALSModel.load(final_path)
-    
+    print(f"✅ Modèle chargé depuis {final_path}")
+
     return spark, model
