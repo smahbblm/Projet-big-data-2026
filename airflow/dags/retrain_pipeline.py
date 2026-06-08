@@ -1,6 +1,14 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
 from datetime import datetime
+import boto3
+
+def download_from_s3():
+    s3 = boto3.client('s3')
+    bucket = "ecommerce-recommendation-2026-225934517672-eu-north-1-an"
+    s3.download_file(bucket, 'data/dataset-ALS.csv', '/tmp/dataset-ALS.csv')
+    print("✅ Dataset téléchargé")
 
 with DAG(
     dag_id='retrain_pipeline',
@@ -11,12 +19,9 @@ with DAG(
     tags=['recommendation', 'als', 'pfa']
 ) as dag:
 
-    telecharger_data = BashOperator(
+    telecharger_data = PythonOperator(
         task_id='telecharger_data',
-        bash_command='''
-            aws s3 cp s3://ecommerce-recommendation-2026-225934517672-eu-north-1-an/data/dataset-ALS.csv \
-            /tmp/dataset-ALS.csv && echo "Dataset téléchargé"
-        '''
+        python_callable=download_from_s3
     )
 
     nettoyer = BashOperator(
@@ -39,7 +44,7 @@ with DAG(
             cd /opt/airflow/project &&
             pip install pyspark boto3 numpy pandas -q &&
             spark-submit spark/train_model.py &&
-            echo "Modèle réentraîné et uploadé sur S3"
+            echo "Modèle réentraîné"
         '''
     )
 
