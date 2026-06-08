@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   api:
     build: ./api
@@ -44,7 +43,9 @@ services:
     command: -c "airflow db init && airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com && echo 'Init done'"
 
   airflow-webserver:
-    image: apache/airflow:2.8.1
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     container_name: airflow-webserver
     depends_on:
       postgres:
@@ -67,7 +68,9 @@ services:
     restart: always
 
   airflow-scheduler:
-    image: apache/airflow:2.8.1
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     container_name: airflow-scheduler
     depends_on:
       postgres:
