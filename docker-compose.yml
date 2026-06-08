@@ -62,6 +62,7 @@ services:
       - /home/ubuntu/projet-final:/opt/airflow/project
       - /opt/spark:/opt/spark
       - /var/run/docker.sock:/var/run/docker.sock
+      - /home/ubuntu/model:/home/ubuntu/model
     ports:
       - "8080:8080"
     command: bash -c "sleep 10 && airflow webserver"
@@ -87,5 +88,6 @@ services:
       - /home/ubuntu/projet-final:/opt/airflow/project
       - /opt/spark:/opt/spark
       - /var/run/docker.sock:/var/run/docker.sock
+      - /home/ubuntu/model:/home/ubuntu/model
     command: scheduler
     restart: always
