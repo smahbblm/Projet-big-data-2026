@@ -48,12 +48,12 @@ with DAG(
         '''
     )
 
-    redeployer = BashOperator(
-        task_id='redeployer_api',
-        bash_command='''
-            docker restart recommendation-api &&
-            echo "API redéployée"
-        '''
-    )
+   redeployer = BashOperator(
+       task_id='redeployer_api',
+       bash_command='''
+           DOCKER_API_VERSION=1.44 docker restart recommendation-api &&
+           echo "API redéployée"
+       '''
+   )
 
     telecharger_data >> nettoyer >> entrainer >> redeployer
