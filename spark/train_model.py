@@ -75,14 +75,18 @@ model = als.fit(train_df)
 print("✅ Modèle entraîné")
 
 # ---- Évaluation ----
-predictions = model.transform(test_df)
-evaluator = RegressionEvaluator(
-    metricName="rmse",
-    labelCol="rating",
-    predictionCol="prediction"
-)
-rmse = evaluator.evaluate(predictions)
-print(f"   RMSE : {rmse:.4f}")
+predictions = model.transform(test_df).dropna(subset=["prediction"])
+
+if predictions.count() > 0:
+    evaluator = RegressionEvaluator(
+        metricName="rmse",
+        labelCol="rating",
+        predictionCol="prediction"
+    )
+    rmse = evaluator.evaluate(predictions)
+    print(f"   RMSE : {rmse:.4f}")
+else:
+    print("⚠️ Pas assez de données pour évaluer (coldStart drop) — RMSE ignoré")
 
 # ---- Sauvegarder le modèle ----
 print("Sauvegarde du modèle...")
