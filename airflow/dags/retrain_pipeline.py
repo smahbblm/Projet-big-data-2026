@@ -23,6 +23,7 @@ with DAG(
         task_id='nettoyer_donnees',
         bash_command='''
             cd /opt/airflow/project &&
+            pip install pandas boto3 -q &&
             python3 data/clean_data.py &&
             echo "Nettoyage terminé"
         '''
@@ -34,18 +35,11 @@ with DAG(
             export SPARK_HOME=/opt/spark &&
             export PATH=$PATH:/opt/spark/bin &&
             export PYSPARK_PYTHON=python3 &&
+            export S3_BUCKET=ecommerce-recommendation-2026-225934517672-eu-north-1-an &&
             cd /opt/airflow/project &&
+            pip install pyspark boto3 numpy pandas -q &&
             spark-submit spark/train_model.py &&
-            echo "Modèle réentraîné"
-        '''
-    )
-
-    upload_modele = BashOperator(
-        task_id='upload_modele_s3',
-        bash_command='''
-            aws s3 cp /tmp/als_model.zip \
-            s3://ecommerce-recommendation-2026-225934517672-eu-north-1-an/final_cleaned/Entrainement_ALS.zip &&
-            echo "Modèle uploadé sur S3"
+            echo "Modèle réentraîné et uploadé sur S3"
         '''
     )
 
@@ -57,4 +51,4 @@ with DAG(
         '''
     )
 
-    telecharger_data >> nettoyer >> entrainer >> upload_modele >> redeployer
+    telecharger_data >> nettoyer >> entrainer >> redeployer

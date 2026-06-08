@@ -1,7 +1,8 @@
 fastapi
 uvicorn
-pyspark
+pyspark==3.5.1
 pymongo
 python-dotenv
 numpy
 pandas
+boto3

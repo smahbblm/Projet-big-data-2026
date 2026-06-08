@@ -14,6 +14,7 @@ services:
 
   postgres:
     image: postgres:13
+    container_name: airflow-postgres
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
@@ -22,9 +23,11 @@ services:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       retries: 5
+    restart: always
 
   airflow-init:
     image: apache/airflow:2.8.1
+    container_name: airflow-init
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,12 +41,14 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
     entrypoint: /bin/bash
-    command: -c "airflow db init && airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com"
+    command: -c "airflow db init && airflow users create --username admin --password admin --firstname Admin --lastname Admin --role Admin --email admin@example.com && echo 'Init done'"
 
   airflow-webserver:
     image: apache/airflow:2.8.1
+    container_name: airflow-webserver
     depends_on:
-      - airflow-init
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
     environment:
@@ -53,15 +58,20 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
+      - /home/ubuntu/projet-final:/opt/airflow/project
+      - /opt/spark:/opt/spark
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "8080:8080"
-    command: webserver
+    command: bash -c "sleep 10 && airflow webserver"
     restart: always
 
   airflow-scheduler:
     image: apache/airflow:2.8.1
+    container_name: airflow-scheduler
     depends_on:
-      - airflow-init
+      postgres:
+        condition: service_healthy
     env_file:
       - .env
     environment:
